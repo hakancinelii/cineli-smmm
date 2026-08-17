@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Arşiv Toplu İndirici - SMMM Ofisi</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/minimal.min.css">
+</head>
+<body>
+  <div class="app">
+    <div class="login-screen">
+      <div class="header">
+        <div class="logo">
+          <i class="fas fa-invoice"></i>
+          <span>E-Arşiv Portal</span>
+        </div>
+        <h1>Giriş Yapın</h1>
+      </div>
+
+      <div class="login-card">
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="vedopUsername"><i class="fas fa-user"></i> Vedop Kullanıcı Adı</label>
+            <input type="text" id="vedopUsername" name="vedopUsername" required autocomplete="off">
+          </div>
+
+          <div class="form-group">
+            <label for="vedopPassword"><i class="fas fa-lock"></i> Vedop Şifre</label>
+            <input type="password" id="vedopPassword" name="vedopPassword" required autocomplete="off">
+          </div>
+
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-sign-in-alt"></i> Giriş Yap
+          </button>
+        </form>
+
+        <div class="footer-text">
+          <p>SMMM Ofisi - E-Arşiv Toplu İşlem Sistemi</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard" id="dashboard" style="display: none;">
+      <div class="header">
+        <div class="logo">
+          <i class="fas fa-invoice"></i>
+          <span>E-Arşiv Portal</span>
+        </div>
+        <div class="user-info">
+          <span>Hoş geldiniz, <strong id="userName"></strong></span>
+          <i class="fas fa-user-circle"></i>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-number" id="totalFiles">0</div>
+            <div class="stat-label">Toplam PDF</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number" id="processedFiles">0</div>
+            <div class="stat-label">İşlenmiş</div>
+          </div>
+        </div>
+
+        <div class="download-section">
+          <div class="section-header">
+            <i class="fas fa-download"></i>
+            <h2>PDF İndirme</h2>
+          </div>
+
+          <div class="form-group">
+            <label>Vedop Kullanıcı Adı</label>
+            <input type="text" id="downloadUsername" class="input-medium" placeholder="Kullanıcı adınızı girin">
+          </div>
+
+          <div class="form-group">
+            <label>Vedop Şifre</label>
+            <input type="password" id="downloadPassword" class="input-medium" placeholder="Şifrenizi girin">
+          </div>
+
+          <button class="btn-secondary" id="startDownloadBtn">
+            <i class="fas fa-download"></i> Toplu PDF İndir
+          </button>
+        </div>
+
+        <div class="user-files" id="userFiles">
+          <div class="empty-state">
+            <i class="fas fa-folder-download"></i>
+            <h3>Henüz dosya yok</h3>
+            <p>Vedop kimlik bilgileri girerek PDF'leri başlatın</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
