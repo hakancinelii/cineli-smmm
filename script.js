@@ -1,47 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
   // ============================================
-  // SUPABASE BACKEND ENTEGRASYONU
+  // GİRİŞ KREDİTİ: STATİK VEDOP GİRİŞ BİLGİLERİ
   // ============================================
-  // BU BÖLÜM SUPABASE PROJE İLE İNTEGRASYON AÇISINDAN HAZIRLANDI
-  // 
-  // GEREKLİ AYARLAMALAR:
-  // 1. Supabase proje oluştur: https://supabase.com
-  // 2. Proje API anahtarlarını alın (ANON_KEY)
-  // 3. Aşağıdaki CONFIG objesini doldurun
-  // 4. SQL sorguları ile tabloları oluşturun (tablo sonrası)
+  // Ofis giriş bilgileri: Kullanıcı Adı: Çineli Smmm / Şifre: Cinelismmm34
+  // Bu bilgiler sadece doğrulama için kullanılır, backend entegrasyonu için
+  // Supabase CONFIG ayarları yapılandırılabilir.
   //
-  // Gerekli Tablolar:
-  // - profiles (id, full_name, vedop_username, title, created_at)
-  // - vedop_mapping (vedop_username, master_title, created_at)
-  // - download_history (id, user_id, files_processed, created_at)
+  // STATIC GİRİŞ BİLGİSİ:
+  // - Kullanıcı Adı: "Cineli Smmm"
+  // - Şifre: "Cinelismmm34"
   //
-  // Sample SQL:
-  // CREATE TABLE profiles (
-  //   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
-  //   full_name TEXT NOT NULL,
-  //   vedop_username TEXT UNIQUE,
-  //   title TEXT,
-  //   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-  // );
-  //
-  // CREATE TABLE vedop_mapping (
-  //   vedop_username TEXT PRIMARY KEY,
-  //   master_title TEXT NOT NULL,
-  //   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-  // );
-  //
-  // CREATE TABLE download_history (
-  //   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
-  //   files_processed INTEGER DEFAULT 0,
-  //   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-  // );
-  //
-  // --------------------------------------------
-
-  const SUPABASE_CONFIG = {
-    url: 'https://YOUR_PROJECT.supabase.co',
-    anonKey: 'YOUR_ANON_KEY'
-  };
+  // SUPABASE AYARLAMASI (İsteğe Bağlı):
+  // const SUPABASE_CONFIG = {
+  //   url: 'https://YOUR_PROJECT.supabase.co',
+  //   anonKey: 'YOUR_ANON_KEY'
+  // };
 
   // ============================================
   // ELEMENT SEÇİMLERİ
@@ -56,6 +29,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const startDownloadBtn = document.getElementById('startDownloadBtn');
   const downloadUsername = document.getElementById('downloadUsername');
   const downloadPassword = document.getElementById('downloadPassword');
+
+  // Sabit Vedop giriş bilgileri
+  const FIXED_USERNAME = 'Cineli Smmm';
+  const FIXED_PASSWORD = 'Cinelismmm34';
 
   // Excel upload elements
   const uploadSection = document.createElement('div');
@@ -84,17 +61,9 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ============================================
-  // SUPABASE İNİTİALİZASYONU
+  // GİRİŞ DOĞRULAMASI - STATİK KREDİT
   // ============================================
-  let supabase = null;
-  
-  // Demo mod: Supabase başlatılamadıysa çalışır
-  let demoMode = true;
-
-  // ============================================
-  // KULLANICI YÖNETİMİ VE GİRİŞ
-  // ============================================
-  loginForm.addEventListener('submit', async function(e) {
+  loginForm.addEventListener('submit', function(e) {
     e.preventDefault();
     
     const username = document.getElementById('vedopUsername').value.trim();
@@ -106,40 +75,24 @@ document.addEventListener('DOMContentLoaded', function() {
     submitBtn.innerHTML = '<i class="fas fa-spinner third-icon"></i> Oturum Açılıyor...';
     submitBtn.disabled = true;
     
-    setTimeout(async () => {
-      // Demo mod kontrolü
-      if (demoMode) {
-        // Demo kullanıcı doğrulama
-        const demoUsernames = ['39605069', 'kullanici1', 'kullanici2', 'kullanici3', 'kullanici4', 'kullanici5'];
-        if (demoUsernames.includes(username) && password.length >= 4) {
-          loginSuccessful(username);
-        } else {
-          showError('Kullanıcı adı veya şifre yanlış');
-          submitBtn.innerHTML = originalText;
-          submitBtn.disabled = false;
-        }
+    // Statik kimlik doğrulama - sadece belirtilen kredilerle çalışır
+    const isCorrectUser = username === FIXED_USERNAME;
+    const isCorrectPass = password === FIXED_PASSWORD;
+    
+    setTimeout(() => {
+      if (isCorrectUser && isCorrectPass) {
+        loginSuccessful();
       } else {
-        // Gerçek Supabase auth
-        // const { data, error } = await supabase.auth.signInWithPassword({
-        //   email: '', 
-        //   password: password
-        // });
-        // if (error) { showError('Kimlik doğrulama başarısız'); /*...*/ }
-        // else { loginSuccessful(username); }
-        loginSuccessful(username); // Demo için
+        showError('Kullanıcı adı veya şifre yanlış');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
       }
-      
-      submitBtn.innerHTML = originalText;
-      submitBtn.disabled = false;
     }, 800);
   });
 
-  function loginSuccessful(username) {
-    // Kullanıcı adını displayeda göster
-    userNameDisplay.textContent = username;
-    
-    // Kullanıcı bilgilerini Supabase'den çek (demo modunda statik)
-    fetchUserInfo(username);
+  function loginSuccessful() {
+    // Ofis adını displayeda göster
+    userNameDisplay.textContent = FIXED_USERNAME;
     
     // Dashboard'i göster, giriş ekranını gizle
     loginScreen.style.display = 'none';
@@ -151,41 +104,65 @@ document.addEventListener('DOMContentLoaded', function() {
     // Focus download inputs
     downloadUsername.focus();
     
-    // Kullanıcının dosyalarını render et
-    renderUserFiles(username, 0);
-  }
-
-  // Vedop username'dan master title çekme (Supabase'den veya demo veriden)
-  async function fetchUserInfo(username) {
-    if (!supabase && demoMode) {
-      // Demo veriler - gerçek projede Supabase query olur
-      const demoUsers = {
-        '39605069': { name: 'Yeni Mükellef', title: 'Mükellef - 39605069' },
-        'kullanici1': { name: 'Ahmet Yılmaz', title: 'Mükellef - Ahmet Yılmaz' },
-        'kullanici2': { name: 'Mehmet K.', title: 'Mükellef - Mehmet K.' },
-        'kullanici3': { name: 'Ayşe D.', title: 'Mükellef - Ayşe D.' },
-        'kullanici4': { name: 'Fatma S.', title: 'Mükellef - Fatma S.' },
-        'kullanici5': { name: 'Ali V.', title: 'Mükellef - Ali V.' }
-      };
-      
-      const user = demoUsers[username];
-      if (user) {
-        userNameDisplay.textContent = `${user.name} (${username})`;
-      }
-      return;
-    }
+    // Başlangıç istatistikleri
+    totalFilesDisplay.textContent = '0';
+    processedFilesDisplay.textContent = '0';
     
-    // Gerçek Supabase query
-    // const { data, error } = await supabase
-    //   .from('profiles')
-    //   .select('full_name, title')
-    //   .eq('vedop_username', username)
-    //   .single();
-    // if (data) { /* update UI */ }
+    // Kullanıcının dosyalarını render et
+    renderUserFiles();
   }
 
   // ============================================
-  // EXCEL YÜKLEME VE VEDOP MAPPING
+  // PDF İNDİRME FONKSİYONU
+  // ============================================
+  startDownloadBtn.addEventListener('click', function() {
+    const username = downloadUsername.value.trim();
+    const password = downloadPassword.value.trim();
+    
+    if (!username || !password) {
+      alert('Lüthem hem kullanıcı ad hem de şifreyi girin');
+      return;
+    }
+    
+    startDownloadBtn.disabled = true;
+    startDownloadBtn.innerHTML = '<i class="fas fa-spinner third-icon"></i> İşleniyor...';
+    
+    setTimeout(() => {
+      startDownloadBtn.disabled = false;
+      startDownloadBtn.innerHTML = '<i class="fas fa-download"></i> Toplu PDF İndir';
+      
+      alert(`${username} için PDF'ler başarıyla işlendi. ${Math.floor(Math.random() * 100) + 1} dosya arşivlendi.`);
+      
+      // Stats güncelle
+      const currentTotal = parseInt(totalFilesDisplay.textContent) || 0;
+      const currentProcessed = parseInt(processedFilesDisplay.textContent) || 0;
+      totalFilesDisplay.textContent = currentTotal + 8;
+      processedFilesDisplay.textContent = currentProcessed + 3;
+      
+      // Dosyaları listeye ekle
+      renderUserFiles(parseInt(totalFilesDisplay.textContent));
+      
+      // Temizle
+      downloadUsername.value = '';
+      downloadPassword.value = '';
+    }, 2500);
+  });
+
+  // ============================================
+  // KULLANICI DOSYALARI RENDER
+  // ============================================
+  function renderUserFiles() {
+    userFilesContainer.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-folder-download"></i>
+        <h3>Henüz PDF Yok</h3>
+        <p>Vedop kimlik bilgileri girerek PDF'leri başlatın</p>
+      </div>
+    `;
+  }
+
+  // ============================================
+  // EXCEL YÜKLEME (Aynı yapıda, sadece login değişti)
   // ============================================
   
   // Excel dosya input değişkeni
@@ -198,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
       excelFileInput.click();
     });
 
-    excelFileInput.addEventListener('change', async function(event) {
+    excelFileInput.addEventListener('change', function(event) {
       const file = event.target.files[0];
       if (!file) return;
       
@@ -210,111 +187,67 @@ document.addEventListener('DOMContentLoaded', function() {
       
       showUploadStatus('Dosya yükleniyor...', 'loading');
       
-      try {
-        // SheetJS ile Excel'i parse et
-        const data = await readXlsxFile(file);
+      // SheetJS ile Excel'i parse et
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
         
-        // Structured data extraction
-        // Beklenen format: Vedop Kullanıcı Adı | Mükellef Ünvanı | ... diğer sütunlar
-        const mappings = parseExcelData(data);
+        // Vedop kullanıcı adı ve ünvan çıkarma
+        const mappings = [];
+        jsonData.forEach((row, index) => {
+          const vedopUsername = row['Vedop Kullanıcı Adı'] || row['vedop_username'] || row[0];
+          const masterTitle = row['Mükellef Ünvanı'] || row['title'] || row[1];
+          
+          if (vedopUsername && masterTitle) {
+            const cleanUsername = String(vedopUsername).trim();
+            const cleanTitle = String(masterTitle).trim();
+            
+            mappings.push({
+              vedop_username: cleanUsername,
+              master_title: cleanTitle,
+              rowIndex: index
+            });
+          }
+        });
         
         if (mappings.length === 0) {
           showUploadStatus('Dosyada veri bulunamadı', 'error');
           return;
         }
         
-        // Supabase'ye kaydet (demo modunda göster)
-        if (demoMode) {
-          await saveMappingsToDemo(mappings);
-        } else {
-          // Gerçek Supabase kaydet
-          // await saveMappingsToSupabase(mappings);
-        }
-        
         showUploadStatus(`${mappings.length} kayıt başarıyla yüklendi`, 'success');
         
-        // Listeleri yenile
+        // LocalStorage'a kaydet
+        let existingMappings = JSON.parse(localStorage.getItem('vedop_mappings') || '[]');
+        mappings.forEach(newMap => {
+          const alreadyExists = existingMappings.some(m => m.vedop_username === newMap.vedop_username);
+          if (!alreadyExists) {
+            existingMappings.push(newMap);
+          }
+        });
+        localStorage.setItem('vedop_mappings', JSON.stringify(existingMappings));
+        
+        // UI güncelle
+        updateVedopMappingUI(existingMappings);
+        
+        // Sayfayı yeniden yükle
         setTimeout(() => {
           location.reload();
         }, 1500);
-        
-      } catch (error) {
-        console.error('Excel parse hatası:', error);
-        showUploadStatus('Dosya işlenirken hata oluştu', 'error');
-      }
-    });
-  }
-
-  // Excel verisini parse et - SheetJS kullanarak
-  function readXlsxFile(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        // Tüm veriyi JSON'a dönüştür
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-        resolve(jsonData);
       };
-      reader.onerror = (e) => reject(new Error('Dosya okuma hatası'));
+      reader.onerror = function() {
+        showUploadStatus('Dosya okuma hatası', 'error');
+      };
       reader.readAsArrayBuffer(file);
     });
   }
 
-  // Excel verisini işle - Vedop kullanıcı adı ve ünvan çıkarma
-  function parseExcelData(data) {
-    const mappings = [];
-    
-    data.forEach((row, index) => {
-      // Demo: Satırdaki verileri Vedop kullanıcı adı ve ünvan olarak ayıkla
-    // Gerçek projede: Satır başı boşlukları temizle ve mapping oluştur
-      const vedopUsername = row['Vedop Kullanıcı Adı'] || row['vedop_username'] || row[0];
-      const masterTitle = row['Mükellef Ünvanı'] || row['title'] || row[1];
-      
-      if (vedopUsername && masterTitle) {
-        // Temizle ve kaydet
-        const cleanUsername = String(vedopUsername).trim();
-        const cleanTitle = String(masterTitle).trim();
-        
-        mappings.push({
-          vedop_username: cleanUsername,
-          master_title: cleanTitle,
-          rowIndex: index
-        });
-      }
-    });
-    
-    return mappings;
-  }
-
-  // Demo modda mappings'i kaydet
-  async function saveMappingsToDemo(mappings) {
-    // LocalStorage'a kaydet veya console.log
-    console.log('Kaydedilen Vedop Mappings:', mappings);
-    
-    // LocalStorage'dan mevcut mapping'leri al
-    let existingMappings = JSON.parse(localStorage.getItem('vedop_mappings') || '[]');
-    
-    // Yeni mapping'leri ekle (duplicate kontrolü)
-    mappings.forEach(newMap => {
-      const alreadyExists = existingMappings.some(m => m.vedop_username === newMap.vedop_username);
-      if (!alreadyExists) {
-        existingMappings.push(newMap);
-      }
-    });
-    
-    // Kaydet
-    localStorage.setItem('vedop_mappings', JSON.stringify(existingMappings));
-    
-    // UI güncelle - mapping'leri göster
-    updateVedopMappingUI(existingMappings);
-  }
-
   // Vedop mapping UI'yi güncelle
   function updateVedopMappingUI(mappings) {
-    // Mapping'leri bir tablo veya liste olarak dashboard'da göster
     const existingList = document.getElementById('vedop-mapping-list');
     if (existingList) existingList.remove();
     
@@ -330,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mappings.length === 0) {
       list.innerHTML = '<p style="color: var(--text-muted);">Henüz mapping yok. Excel dosyası yükle.</p>';
     } else {
-      let html = '<h4>Vedop - Mükellef Mapping' + (mappings.length > 5 ? ` (${mappings.length} toplam)` '') + '</h4>';
+      let html = '<h4>Vedop - Mükellef Mapping</h4>';
       html += '<div style="max-height: 200px; overflow-y: auto; margin-top: 10px;">';
       
       mappings.slice(0, 10).forEach((m, i) => {
@@ -379,186 +312,15 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     uploadStatus.textContent = message;
     
-    // 5 saniye sonra gizle
     setTimeout(() => {
-      uploadStyle.display = 'none';
+      uploadStatus.style.display = 'none';
     }, 5000);
   }
 
   // ============================================
-  // PDF İNDİRME FONKSİYONU (Güncellenmiş)
+  // ANİMASYONLAR
   // ============================================
-  startDownloadBtn.addEventListener('click', function() {
-    const username = downloadUsername.value.trim();
-    const password = downloadPassword.value.trim();
-    
-    if (!username || !password) {
-      alert('Lüthem hem kullanıcı ad hem de şifreyi girin');
-      return;
-    }
-    
-    startDownloadBtn.disabled = true;
-    startDownloadBtn.innerHTML = '<i class="fas fa-spinner third-icon"></i> İşleniyor...';
-    
-    setTimeout(() => {
-      startDownloadBtn.disabled = false;
-      startDownloadBtn.innerHTML = '<i class="fas fa-download"></i> Toplu PDF İndir';
-      
-      alert(`${username} için PDF'ler başarıyla işlendi. ${Math.floor(Math.random() * 100) + 1} dosya arşivlendi.`);
-      
-      // Stats güncelle
-      const currentTotal = parseInt(totalFilesDisplay.textContent) || 0;
-      const currentProcessed = parseInt(processedFilesDisplay.textContent) || 0;
-      totalFilesDisplay.textContent = currentTotal + 8;
-      processedFilesDisplay.textContent = currentProcessed + 3;
-      
-      // Dosyaları listeye ekle
-      renderUserFiles(username, parseInt(totalFilesDisplay.textContent));
-      
-      // Temizle
-      downloadUsername.value = '';
-      downloadPassword.value = '';
-      
-      // Vedop mapping'ten title çekilip display update
-      fetchUserInfo(username);
-      
-    }, 2500);
-  });
-
-  // ============================================
-  // KULLANICI DOSYALARI RENDER (Güncellenmiş)
-  // ============================================
-  function renderUserFiles(username, fileCount) {
-    if (fileCount === 0) {
-      userFilesContainer.innerHTML = `
-        <div class="empty-state">
-          <i class="fas fa-folder-download"></i>
-          <h3>Henüz PDF Yok</h3>
-          <p>Vedop kimlik bilgileri girerek PDF'leri başlatın</p>
-        </div>
-      `;
-      return;
-    }
-    
-    let html = '';
-    const showAll = fileCount <= 15;
-    
-    for (let i = 1; i <= (showAll ? fileCount : 15); i++) {
-      html += `
-        <div class="file-item">
-          <div class="file-icon"><i class="fas fa-file-pdf"></i></div>
-          <div class="file-info">
-            <span class="file-name">E-Arşiv ${i} - ${username}</span>
-            <span class="file-status">İşleniyor</span>
-          </div>
-          <div class="file-download">
-            <a href="#" class="download-link" data-file="${i}" target="_blank">
-              <i class="fas fa-download"></i> İndir
-            </a>
-            <span class="progress-bar">
-              <div class="progress-fill" style="width: ${i * 10}%"></div>
-            </span>
-          </div>
-        </div>
-      `;
-    }
-    
-    if (fileCount > 15) {
-      html += `
-        <div class="file-item">
-          <div class="file-icon"></div>
-          <div class="file-info">
-            <span class="file-name">Ve ${fileCount - 10} daha fazla dosya</span>
-            <span class="file-status">Bekliyor</span>
-          </div>
-        </div>
-      `;
-    }
-    
-    userFilesContainer.innerHTML = html;
-    
-    // Download link'lerine event listener ekle
-    attachDownloadListeners();
-    
-    // Mapping'den username için title güncelle
-    fetchUserInfo(username);
-  }
-
-  // Download link event listenerları
-  function attachDownloadListeners() {
-    const links = document.querySelectorAll('.download-link');
-    links.forEach(link => {
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
-        const fileNum = this.getAttribute('data-file');
-        downloadSingleFile(fileNum);
-      });
-    });
-  }
-
-  async function downloadSingleFile(fileNum) {
-    showLoading('Dosya hazırlanıyor...');
-    
-    setTimeout(() => {
-      hideLoading();
-      alert(`${fileNum}. PDF başarıyla indirildi.`);
-    }, 1500);
-  }
-
-  function showLoading(message) {
-    const overlay = document.createElement('div');
-    overlay.className = 'loading-overlay';
-    overlay.innerHTML = `
-      <div class="spinner"></div>
-      <span>${message}</span>
-    `;
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--card);
-      border-radius: 16px;
-      padding: 30px;
-      text-align: center;
-      color: var(--text);
-      z-index: 1001;
-      animation: fadeIn 0.3s ease;
-    `;
-    document.body.appendChild(overlay);
-    return overlay;
-  }
-
-  function hideLoading(overlay) {
-    if (overlay && overlay.parentNode) {
-      overlay.parentNode.removeChild(overlay);
-    }
-  }
-
-  function showError(message) {
-    const existingError = document.querySelector('.error-message');
-    if (existingError) existingError.remove();
-    
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.style.cssText = `
-      background: #fee2e2;
-      color: #dc2626;
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-top: 12px;
-      border: 1px solid #fecaca;
-      text-align: center;
-      font-size: 14px;
-      animation: shake 0.5s ease;
-    `;
-    errorDiv.textContent = message;
-    
-    const form = document.getElementById('loginForm');
-    form.insertBefore(errorDiv, form.firstElementChild);
-    
-    setTimeout(() => errorDiv.remove(), 5000);
-  }
-
-  // Animasyon shake
+  // Shake animasyonı
   const style = document.createElement('style');
   style.textContent = '@keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }';
   document.head.appendChild(style);
